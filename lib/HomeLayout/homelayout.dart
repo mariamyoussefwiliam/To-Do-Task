@@ -1,9 +1,9 @@
 import 'package:conditional_builder/conditional_builder.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+
+import 'package:to_do_app/Provider/cubit.dart';
 import 'package:to_do_app/component/component.dart';
-import 'package:to_do_app/cubit/cubit.dart';
-import 'package:to_do_app/model/task_model.dart';
+
 import 'package:to_do_app/modules/Important%20tasks/Important.dart';
 
 import 'package:to_do_app/modules/done%20tasks/done.dart';
