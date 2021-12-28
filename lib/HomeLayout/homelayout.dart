@@ -1,7 +1,7 @@
 import 'package:conditional_builder/conditional_builder.dart';
 import 'package:flutter/material.dart';
 
-import 'package:to_do_app/Provider/cubit.dart';
+import 'package:to_do_app/Provider/provider.dart';
 import 'package:to_do_app/component/component.dart';
 
 import 'package:to_do_app/modules/Important%20tasks/Important.dart';
