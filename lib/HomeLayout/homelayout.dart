@@ -1,27 +1,25 @@
 import 'package:conditional_builder/conditional_builder.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:hive/hive.dart';
 import 'package:to_do_app/component/component.dart';
 import 'package:to_do_app/cubit/cubit.dart';
-import 'package:to_do_app/cubit/states.dart';
-import 'package:to_do_app/modules/archived%20tasks/archived.dart';
+import 'package:to_do_app/model/task_model.dart';
+import 'package:to_do_app/modules/Important%20tasks/Important.dart';
+
 import 'package:to_do_app/modules/done%20tasks/done.dart';
 import 'package:to_do_app/modules/new%20tasks/new.dart';
 
 class HomeLayout extends StatelessWidget
 {
 
-  List<String> titles=["New Tasks","Done Tasks","Archived Tasks"];
+  List<String> titles=["New Tasks","Done Tasks","Important Tasks"];
   List<Widget> screens=[
     NewTasks(),
     DoneTasks(),
-    ArchivedTasks()];
+    ImportantTasks()];
 
   var ScaffoldKey= GlobalKey<ScaffoldState>();
   var FormKey= GlobalKey<FormState>();
-
 
   var TitleController=TextEditingController();
   var DateController=TextEditingController();
@@ -34,18 +32,8 @@ class HomeLayout extends StatelessWidget
   @override
   Widget build(BuildContext context) {
 
-    return BlocProvider(
 
-      create: (BuildContext context)=> MainCubit()..CreateDatabase(),
-      child: BlocConsumer<MainCubit,States>
-        (
-        listener:(BuildContext context,States state ) {
-
-          print(state);
-        },
-        builder: (BuildContext context,States state ){
-
-          MainCubit cubit = MainCubit.get(context);
+          MainProvider cubit = MainProvider.get(context);
 
          return    Scaffold(
 
@@ -69,19 +57,56 @@ class HomeLayout extends StatelessWidget
               {
                 if( FormKey.currentState.validate())
                 {
-                  cubit.InsertDatabase(title: TitleController.text, date: DateController.text, time: TimeController.text)
-                      .then((value)
-                  {
-                    Navigator.pop(context);
+                  if(cubit.index==0)
+                    {
 
-                  });
+                      cubit.InsertDatabase(title: TitleController.text, date: DateController.text, time: TimeController.text,state: "new")
+                          .then((value)
+                      {
+                        TitleController.text="";
+                        DateController.text="";
+                        TimeController.text="";
+                        Navigator.pop(context);
+
+
+                      });
+                    }
+                  else if (cubit.index==1)
+                    {
+
+                      cubit.InsertDatabase(title: TitleController.text, date: DateController.text, time: TimeController.text,state:"done")
+                          .then((value)
+                      {
+                        TitleController.text="";
+                        DateController.text="";
+                        TimeController.text="";
+                        Navigator.pop(context);
+
+
+                      });
+
+                    }
+                  else
+                  {
+
+                    cubit.InsertDatabase(title: TitleController.text, date: DateController.text, time: TimeController.text,state:"not important")
+                        .then((value)
+                    {
+                      TitleController.text="";
+                      DateController.text="";
+                      TimeController.text="";
+                      Navigator.pop(context);
+
+
+                    });
+
+                  }
+
 
                 }
                 else
                 {
-              /*    setState(() {
-                    clickFloating=false;
-                  });*/
+
                   cubit.changeCurrentIndex(false, cubit.index);
                 }
 
@@ -188,9 +213,7 @@ class HomeLayout extends StatelessWidget
                   cubit.changeCurrentIndex(false, cubit.index);
                 });
               }
-           /*   setState(() {
-                clickFloating=!clickFloating;
-              });*/
+
               cubit.changeCurrentIndex(!(cubit.clickFloating), cubit.index);
             },
             child: IconButton(
@@ -200,8 +223,8 @@ class HomeLayout extends StatelessWidget
             ),
           ),
           body: ConditionalBuilder(
-            condition: state is! LoadingState,
-            builder: (context) => screens[cubit.index],
+           condition: true ,
+            builder: (BuildContext context) => screens[cubit.index],
             fallback: (context) => Center(child: CircularProgressIndicator()),
           ),
           bottomNavigationBar: BottomNavigationBar(
@@ -225,15 +248,14 @@ class HomeLayout extends StatelessWidget
               ),
               BottomNavigationBarItem(
                 icon: Icon(Icons.archive),
-                title: Text("Archived Tasks"),
+                title: Text("Important Tasks"),
               ),
 
             ],
           ),
         );
   }
-      ),
-    );
+
   }
 
 
@@ -246,5 +268,4 @@ class HomeLayout extends StatelessWidget
 
 
 
-}
 

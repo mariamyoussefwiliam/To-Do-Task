@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:to_do_app/cubit/cubit.dart';
 
 Widget defaultFormField({
@@ -45,11 +46,13 @@ Widget defaultFormField({
 
 Widget buildTaskItem (  @required Map task,
     BuildContext context,
-
-    )
+    int indexx
+   )
 =>
+    ChangeNotifierProvider<MainProvider>(
 
-    Dismissible(
+create: (_)=>MainProvider(),
+child:  Dismissible(
       key: Key(task["id"].toString()),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -87,29 +90,41 @@ Widget buildTaskItem (  @required Map task,
                 ],
               ),
             ),
-            SizedBox(width: 20,),
-        IconButton(icon: Icon(Icons.check_box,color: Colors.blue,)
-          ,
-          onPressed: ()
-          {
-            MainCubit.get(context).Update(id: task['id'], status: "done");
 
-          },
-
-        ),
-            IconButton(icon: Icon(Icons.archive,color: Colors.black38,)
+    SizedBox(width: 20,),
+            indexx!=0? IconButton(icon: Icon(Icons.list,color: Colors.blue,size: 30,)
               ,
               onPressed: ()
               {
-                MainCubit.get(context).Update(id: task['id'], status: "archived");
+                Provider.of<MainProvider>(context,listen: false).Update(id: task['id'], status: "new");
               },
 
-            ),
+            ):Container(),
+   indexx!=1?
+   IconButton(icon: Icon(Icons.check_box,color: Colors.blue,)
+          ,
+          onPressed: ()
+          {
+
+
+            Provider.of<MainProvider>(context,listen: false).Update(id: task['id'], status: "done");
+          },
+
+        ):Container(),
+            indexx!=2? IconButton(icon: Icon(Icons.archive,color: Colors.black38,)
+              ,
+              onPressed: ()
+              {
+                Provider.of<MainProvider>(context,listen: false).Update(id: task['id'], status: "not important");
+              },
+
+            ):Container(),
+
           ],
         ),
       ),
       onDismissed: (direction)
       {
-        MainCubit.get(context).Delete(id: task['id']);
+        Provider.of<MainProvider>(context,listen: false).Delete(id: task['id']);
       },
-    );
+    ));

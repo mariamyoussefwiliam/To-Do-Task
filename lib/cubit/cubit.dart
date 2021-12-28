@@ -1,18 +1,13 @@
 
-import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:to_do_app/cubit/states.dart';
-import 'package:to_do_app/modules/archived%20tasks/archived.dart';
-import 'package:to_do_app/modules/done%20tasks/done.dart';
-import 'package:to_do_app/modules/new%20tasks/new.dart';
 
-class MainCubit extends Cubit<States>
+class MainProvider  with  ChangeNotifier
 {
-  MainCubit():super(InitState());
 
-  static MainCubit get(context)=>BlocProvider.of(context);
+
+  static MainProvider get(context)=>Provider.of<MainProvider>(context);
   int index=0;
 
   bool clickFloating=false;
@@ -23,14 +18,15 @@ class MainCubit extends Cubit<States>
 
     clickFloating=clickfloating;
     index=current_index;
-    emit(changeIndex());
+
+    notifyListeners();
 
   }
 
 
   List<Map> newtasks =[];
   List<Map> donetasks =[];
-  List<Map> archivedtasks =[];
+  List<Map> importanttasks =[];
   Database database;
 
 
@@ -59,38 +55,46 @@ class MainCubit extends Cubit<States>
         }
     ).then((value) {
       database =value;
-      emit(CreateDatabaseState());
+
+      notifyListeners();
     });
   }
 
 
-  void getDateFromDatabase(Database database) async
+  Future getDateFromDatabase(Database database) async
   {
     newtasks=[];
     donetasks=[];
-    archivedtasks=[];
+    importanttasks=[];
 
-    emit(LoadingState());
+
+    notifyListeners();
      await database.rawQuery("SELECT * FROM tasks").then((value) {
+
 
       value.forEach((element) {
        if(element['status']=="new")
          {
            newtasks.add(element);
+
          }
        else if(element['status']=="done")
          {
            donetasks.add(element);
+
          }
        else
          {
-           archivedtasks.add(element);
+           importanttasks.add(element);
+
          }
 
       });
-      emit(GetDataFromDatabaseState());
-      emit(UpdateState());
+
+      notifyListeners();
+      print(importanttasks.toString());
     }
+
 
      );}
 
@@ -104,7 +108,8 @@ class MainCubit extends Cubit<States>
         ['$status', id]).then((value) {
           print("update done");
           getDateFromDatabase(database);
-          emit(UpdateState());
+
+          notifyListeners();
 
   });
 
@@ -117,14 +122,16 @@ class MainCubit extends Cubit<States>
     @required String title,
     @required String date,
     @required String time,
+    @required String state,
   })async
   {
     return await database.transaction((txn) {
       txn.rawInsert(
-          "INSERT INTO tasks ('title','date','time','status') VALUES ('$title','$date','$time','new')"
+          "INSERT INTO tasks ('title','date','time','status') VALUES ('$title','$date','$time','$state')"
       ).then((value) {
         print("insert successfully");
-        emit(InsertdataIntoDatabaseState());
+
+        notifyListeners();
         getDateFromDatabase(database);
 
 
@@ -146,7 +153,7 @@ void Delete({
       .rawDelete('DELETE FROM tasks WHERE id = $id').then((value) {
      print("delete done");
      getDateFromDatabase(database);
-     emit(DeleteState());
+     notifyListeners();
 
    });
 
